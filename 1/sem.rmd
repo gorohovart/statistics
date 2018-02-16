@@ -1,0 +1,100 @@
+# Задание 1
+Моделируем выборки:
+```{r}
+sample_norm <- rnorm(100, mean = 2, sd = 1)
+sample_exp <-rexp(100,rate=0.5)
+sample_unif<-runif(100,0,4)
+sample_forkurt = append(rep(2,75),rnorm(25,mean = 2, sd = 1))
+```
+
+Статистика:
+```{r}
+library(moments)
+mysummary = function(x){
+  #исправленная дисперсия
+  var = var(x, y = NULL, na.rm = FALSE) 
+  
+  
+  return (round(c(
+      min(x),
+      max(x),
+      max(x)-min(x),
+      #выборочное среднее
+      mean(x),
+      #медиана
+      median(x, na.rm=FALSE),
+      #Q1
+      quantile(x, c(0.25)),
+      #Q3
+      quantile(x, c(0.75)),
+      #Выборочная дисперсия
+      0.99 * var,
+      #исправленная дисперсия
+      var,
+      #Выборочное стандартное отклонение
+      sqrt(var),
+      # Коэффициент вариации
+      sqrt(var)/mean(x),
+      # Коэффициент асимметрии
+      skewness(x),
+      # Коэффициент эксцесса
+      kurtosis(x)-3
+      ),2))
+}
+
+row_names = c('min:','max:','Razmax:','mean:','var:', 'not corrected var:  ', 'sd:','median:', 'q1:', 'q3:', 'Variation coef:','Skewness:', 'Kurtosis:')
+
+vars_norm = mysummary(sample_norm)
+vars_exp = mysummary(sample_exp)
+vars_unif = mysummary(sample_unif)
+vars_forkurt = mysummary(sample_forkurt)
+vars = data.frame(cbind(vars_norm,vars_exp,vars_unif,vars_forkurt))
+```
+
+```{r}
+names(vars) = c('Normal','Exponential','Uniform','My Sample')
+rownames(vars) = row_names
+print(round(vars,2))
+```
+
+Графики
+```{r}
+hist(sample_norm, freq = F,col=rgb(1,0,0,1/4),xlim = c(-2,18), ylim = c(0,0.5),main = 'Normal and Exponential Distributions', xlab = 'X')
+hist(sample_exp,freq = F,col=rgb(0,1,0,1/4), add=T)
+```
+
+```{r}
+hist(sample_unif,freq=F,col=rgb(0,0,1,1/4))
+```
+
+```{r}
+hist(sample_forkurt,freq=F,col=rgb(1,0,1,1/4))
+```
+
+```{r}
+boxplot(sample_norm,sample_exp, sample_unif,sample_forkurt, names = c('norm','exp','unif','mysample'))
+```
+
+# Задание 2
+
+```{r}
+sample1<- rnorm(60, mean = 0, sd = 1)
+sample2<- rnorm(80, mean = 4, sd = 0.5)
+
+sample<- append(sample1, sample2 )
+
+vars = data.frame(mysummary(sample))
+rownames(vars) = row_names
+
+print(round(vars,2))
+```
+
+```{r}
+h1 = hist(sample,col=rgb(1,0,0,1/2))
+lines(h1$mids,h1$counts)
+rug(sample)
+```
+
+```{r}
+plot(ecdf(sample))
+```
