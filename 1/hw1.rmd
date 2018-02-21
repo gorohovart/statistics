@@ -1,0 +1,91 @@
+---
+title: HW 1
+output: html_document
+author: Артем Горохов
+---
+
+```{r}
+options(digits = 15)
+data = read.table('13_6',sep='\t',header=F)
+head(data)
+```
+
+```{r}
+n = nrow(data)
+print(n)
+```
+
+```{r}
+mysummary = function(x){
+  #исправленная дисперсия
+  var = var(x) 
+  
+  
+  return (round(c(
+      #выборочное среднее
+      mean(x),
+      #медиана
+      median(x, na.rm=FALSE),
+      #Выборочная дисперсия
+      (n-1) / n * var),1))
+}
+```
+
+```{r}
+data13 = data[[4]]
+data6 = data[[3]]
+```
+
+```{r}
+mysummary(data13)
+```
+
+```{r}
+library(purrr)
+difference = as.numeric(map2(data13, data6, `-`))
+
+```
+
+```{r}
+library(moments)
+mysummary2 = function(x){
+  return (
+      round(
+        c(
+          #выборочное среднее
+          mean(x),
+          # Коэффициент эксцесса
+          kurtosis(x)-3,
+          # Коэффициент асимметрии
+          skewness(x))
+          ,2)
+      )
+}
+
+mysummary2(difference)
+```
+#Гистограммы
+```{r}
+min(data13)
+max(data13)
+min(data6)
+max(data6)
+```
+```{r}
+hist(data13, freq = F, breaks = 20, col=rgb(1,0,0,1/4),xlim = c(3000,8000),main = 'Amount of customers on 13', xlab = 'Amount of customers')
+hist(data6,freq = F, breaks = 20,col=rgb(0,0,1,1/4),xlim = c(3000,8000),main = 'Amount of customers on 6', xlab = 'Amount of customers')
+```
+```{r}
+min(difference)
+max(difference)
+```
+```{r}
+hist(difference, freq = F, breaks = 20, col=rgb(1,0,0,1/4),xlim = c(-400,800), main = 'Difference b-n 13 and 6', xlab = 'Amount of customers')
+```
+
+# Ящики с усами
+```{r}
+boxplot(data13,data6, names = c("Amount on 13",'Amount on 6'))
+boxplot(difference, names = c('Difference b-n 13 and 6'))
+boxplot(data13,data6,difference, names = c('Amount on 13','Amount on 6', 'Difference b-n 13 and 6'))
+```

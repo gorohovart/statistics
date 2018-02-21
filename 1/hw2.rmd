@@ -1,0 +1,73 @@
+---
+title: HW 1 colleges
+output: html_document
+author: Артем Горохов
+---
+
+```{r}
+options(digits = 15)
+data = read.table('colleges',sep='\t',header=TRUE)
+head(data)
+```
+
+```{r}
+artsData = data[data$School_Type == "Lib Arts",]
+univData = data[data$School_Type != "Lib Arts",]
+head(artsData)
+head(univData)
+```
+```{r}
+artsSAT = artsData[[3]]
+artsAcc = artsData[[4]]
+artsXStud = artsData[[5]]
+artsTop10 = artsData[[6]]
+artsXPhD = artsData[[7]]
+artsGrad = artsData[[8]]
+
+univSAT = univData[[3]]
+univAcc = univData[[4]]
+univXStud = univData[[5]]
+univTop10 = univData[[6]]
+univXPhd = univData[[7]]
+univGrad = univData[[8]]
+
+```
+
+
+# Ящики с усами
+```{r}
+boxplot(artsSAT,univSAT, names = c("Arts",'Univ'), main = "SAT")
+boxplot(artsAcc,univAcc, names = c("Arts",'Univ'), main = "Acceptance")
+boxplot(artsXStud,univXStud, names = c("Arts",'Univ'), main = "StudentMoney")
+boxplot(artsTop10,univTop10, names = c("Arts",'Univ'), main = "Top 10")
+boxplot(artsXPhD,univXPhd, names = c("Arts",'Univ'), main = "PhD %")
+boxplot(artsGrad,univGrad, names = c("Arts",'Univ'), main = "Grad %")
+```
+
+#Гистограммы
+
+```{r}
+hist(artsSAT,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists SAT', xlab = 'X')
+hist(univSAT,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ SAT', xlab = 'X')
+hist(artsAcc,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists Acc', xlab = 'X')
+hist(univAcc,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ Acc', xlab = 'X')
+hist(artsXStud,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists Money', xlab = 'X')
+hist(univXStud,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ Money', xlab = 'X')
+hist(artsTop10,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists Top10', xlab = 'X')
+hist(univTop10,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ Top10', xlab = 'X')
+hist(artsXPhD,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists PhD', xlab = 'X')
+hist(univXPhd,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ Phd', xlab = 'X')
+hist(artsGrad,freq = F, breaks = 10, col=rgb(1,0,0,1/4),main = 'Artists Grad', xlab = 'X')
+hist(univGrad,freq = F, breaks = 10, col=rgb(0,0,1,1/4),main = 'Univ Grad', xlab = 'X')
+
+```
+
+
+```{r}
+
+mean(artsSAT)
+quantile(univAcc, c(0.75))
+data[data$X..Student == max(data[[5]]),]
+
+```
+
