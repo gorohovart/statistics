@@ -1,0 +1,170 @@
+
+### Напишите, что такое: "выборочное среднее выборки выборочных средних"
+
+ээээээээм. это усреднённое среднее ¯\\\_(ツ)\_/¯
+
+# Задание 1
+Моделируем генеральную совокупность:
+
+```{r}
+library(purrr)
+myMean = -5
+mySd = 5
+myVar = mySd*mySd
+
+calcVars = function(x,n){
+  var = var(x, y = NULL, na.rm = FALSE)
+
+  return (list(
+    #Дисперсия
+    x = round((n-1) / n * var, 2),
+    #исправленная дисперсия
+    y = round(var,2)))
+}
+
+genSample = function(n, statFun){
+  s = 1:1000 %>%
+        map(function(x) {
+          s = rnorm(n, mean = myMean, sd = mySd)
+          return(statFun(s,n))
+          })
+  return(s)
+}
+```
+
+```{r}
+vars30 = genSample(30,calcVars)
+var30 = unlist(map(vars30, function(l) l[1]))
+corVar30 = unlist(map(vars30, function(l) l[2]))
+
+vars1000 = genSample(1000,calcVars)
+var1000 = unlist(map(vars1000, function(l) l[1]))
+corVar1000 = unlist(map(vars1000, function(l) l[2]))
+```
+
+```{r}
+drawBoxplot = function(notCorr, corr, n){
+  boxplot(notCorr, corr, names = c('not corrected', 'corrected'), main = sprintf("N = %i", n))
+  abline(h=mean(notCorr),col=c('red'))
+  abline(h=mean(corr),col=c('green'))
+  abline(h = myVar,col=c('pink'))
+}
+drawBoxplot(var30, corVar30, 30)
+drawBoxplot(var1000, corVar1000, 1000)
+```
+
+###Плотность
+
+```{r}
+plotDensity = function(notCorr,corr, n){
+  meanVar = mean(notCorr)
+  meanCorVar = mean(corr)
+  
+  x = seq(-20, 10,0.1)
+  p1 = plot(x, dnorm(x,mean=myMean,sd = mySd),type = 'l', main=sprintf('N = %i', n),col='blue', ylab = "density")
+  lines(x, dnorm(x,mean=myMean,sd = sqrt(meanCorVar) ), type ='l',col="green")
+  lines(x, dnorm(x,mean=myMean,sd = sqrt(meanVar) ), type = 'l',col='red')
+  legend(-21, 0.08, legend=c(sprintf("sd = %f", mySd), sprintf("mean sd = %f", sqrt(meanCorVar)), sprintf('cor mean sd = %e', sqrt(meanCorVar))),col=c("red", "green", "blue"))
+}
+
+plotDensity(var1000, corVar1000, 1000)
+plotDensity(var30, corVar30, 30)
+
+```
+
+### Чем отличаются исправленная выборочная и выборочная дисперсии?
+формально они отличаются в (n-1)/n раз :D
+Выборочная дисперсия является смещённой оценкой теоретической дисперсии, а исправленная выборочная дисперсия — несмещённой. В этом и разница
+
+### Что происходит при увеличении объема выборки?
+С увеличением объёма выборки разница между дисперсиями снижается
+
+# Задание 2
+```{r}
+
+calcMeanMed = function(x,n) {
+  return (c(
+      #выборочное среднее
+      mean(x),
+      #медиана
+      median(x, na.rm=FALSE)))
+}
+
+```
+
+```{r}
+meanMed30 = genSample(30,calcMeanMed)
+mean30 = unlist(map(meanMed30, function(l) l[1]))
+med30 = unlist(map(meanMed30, function(l) l[2]))
+
+meanMed1000 = genSample(1000,calcMeanMed)
+mean1000 = unlist(map(meanMed1000, function(l) l[1]))
+med1000 = unlist(map(meanMed1000, function(l) l[2]))
+```
+
+```{r}
+drawBoxplot = function(mean, med, n){
+  boxplot(mean, med, names = c('mean', 'median'), main = sprintf("N = %i", n))
+}
+drawBoxplot(mean30, med30, 30)
+drawBoxplot(mean1000, med1000, 1000)
+```
+
+### Можно ли использовать медиану в качестве оценки мат. ожидания для нормального распределения? Почему?
+
+Да, можно. Эксперимент показал что в среднем медиана от среднего значения для нормально распределённой выборки не отличаются.
+
+### Если выбирать между медианой и выборочным средним для оценки мат. ожидания нормального распределения, то какую следует выбрать? Почему?
+
+Логично, что надо брать среднее значение. По определению мат ожидание это среднее значение.
+
+# Задание 3
+
+```{r}
+library( DescTools)
+calcStats = function(x){
+  
+  trimmed = Trim(sort(x), trim = 0.05, na.rm = FALSE)
+  
+  return (c(
+    #выборочное среднее
+    mean(x),
+    #медиана
+    median(x),
+    #усеченное среднее
+    mean(x, trim=0.05),
+    #усеченное среднее
+    mean(x, trim=0.1),
+    #медиана - 5%
+    median(trimmed)))
+}
+
+genSample = function(){
+  s = 1:1000 %>%
+        map(function(x) {
+          s1 = rnorm(1000, mean = myMean, sd = mySd)
+          s2 = rnorm(10, mean = myMean*20, sd = mySd)
+          s = append(s1, s2)
+
+          return(calcStats(s))
+          })
+  return(s)
+}
+
+```
+
+```{r}
+meanMedTrim1010 = genSample()
+mean1010 = unlist(map(meanMedTrim1010, function(l) l[1]))
+med1010 = unlist(map(meanMedTrim1010, function(l) l[2]))
+trim1010_5 = unlist(map(meanMedTrim1010, function(l) l[3]))
+trim1010_10 = unlist(map(meanMedTrim1010, function(l) l[4]))
+trimMed1010 = unlist(map(meanMedTrim1010, function(l) l[5]))
+
+boxplot(trimMed1010,med1010,mean1010,trim1010_5, trim1010_10, names = c('median - 5%', 'median', 'mean', 'mean-5%', 'mean-10%'), main = sprintf("N = %i", 1010))
+
+```
+
+### На какую из оценок мат. ожидания выбросы влияют больше всего? На какую меньше?
+
+судя по графикам выбросы значительно влияют на среднее, и почти не влияют на медиану
