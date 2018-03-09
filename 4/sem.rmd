@@ -1,0 +1,89 @@
+---
+title: Sem 4
+output: html_document
+author: Артем Горохов
+---
+
+# Задание 1
+
+```{r}
+
+myMean1 = 3
+myMean2 = 6
+mySd = 3
+
+power = 0.9
+alpha = 0.05
+
+calcStats = function() {
+
+  n = 100
+  t_stat_1H0 = c(0)
+  t_stat_2H0 = c(0)
+  
+  for (i in 1:1000) {
+    samp1 = rnorm(n, myMean1, mySd)
+    samp2 = rnorm(n, myMean2, mySd)
+    t_stat_1H0[[i]] = (mean(samp1)-myMean1)/ sqrt( (n-1)/n * var(samp1)) * sqrt(n)
+    t_stat_2H0[[i]] = (mean(samp2)-myMean1)/ sqrt( (n-1)/n * var(samp2)) * sqrt(n)
+  }
+  
+  x<-seq(-10,10,0.01)
+  hist(t_stat_1H0,freq=F, xlim=c(-10,10), ylim = c(0,0.5) ,col=rgb(0,1,0,1/4),main = '',xlab='')
+  hist(t_stat_2H0,freq=F, xlim=c(-10,10),col=rgb(1,0,0,1/4),add=T)
+  lines(x,dt(x,df=n-1),col="blue")
+  legend("topleft", legend=c("H0: E1 = a0", "H0: E2 = a0"), fill = c(rgb(0,1,0,1/4), rgb(1,0,0,1/4)))
+}
+```
+
+```{r}
+
+calcStats()
+```
+
+
+График плотности T-статистики для гипотезы H0: E1 = a0 совпадает с графиком распределения t(n-1) следовательно гипотеза правильна. Не принять её - ошибка первого рода.
+Вторая же гипотеза отвергается ввиду того, что плотность её статистики не совпадает с t(n-1). Принять её - ошибка второго рода.
+
+# Задание 2
+
+```{r}
+
+myMean1 = 3
+myMean2 = 6
+mySd = 3
+
+calcStats2 = function() {
+
+  n = 100
+  t_stat_H0 = 1:1000
+  t_stat_H1 = 1:1000
+  
+  
+  t_stat_H0 %>%
+    map (function(qwe){
+    sampH0True = rnorm(n, myMean1, mySd)
+    return( t.test(sampH0True,alternative=c("t"),mu=myMean1) )
+    })
+  
+  t_stat_H1 %>%
+    map (function(qwe){
+    sampH1True = rnorm(n, myMean2, mySd)
+    return( t.test(sampH1True,alternative=c("t"),mu=myMean1) )  
+    })
+
+  boxplot(t_stat_H0, t_stat_H1)
+  #x<-seq(-10,10,0.01)
+  #hist(t_stat_1H0,freq=F, xlim=c(-10,10), ylim = c(0,0.5) ,col=rgb(0,1,0,1/4),main = '',xlab='')
+  #hist(t_stat_2H0,freq=F, xlim=c(-10,10),col=rgb(1,0,0,1/4),add=T)
+  #lines(x,dt(x,df=n-1),col="blue")
+  #legend("topleft", legend=c("H0: E1 = a0", "H0: E2 = a0"), fill = c(rgb(0,1,0,1/4), rgb(1,0,0,1/4)))
+}
+
+```
+
+```{r}
+calcStats2()
+```
+
+

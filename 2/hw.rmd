@@ -1,0 +1,37 @@
+---
+title: HW 2
+output: html_document
+author: Артем Горохов
+---
+```{r}
+library(purrr)
+estimateN = function(n) {
+  s = 1:1000 %>%
+        map(function(x) {
+          s = rexp(n, rate=3)
+          return(1/mean(s))
+          })
+  return(unlist(s))
+}
+
+rates100 = estimateN(100)
+
+rates1000 = estimateN(1000)
+
+rates5000 = estimateN(5000)
+```
+
+```{r}
+boxplot(rates100,rates1000,rates5000, main = "rates for 100, 1000 and 5000", names = c('n = 100','n = 1000','n = 5000'))
+```
+
+```{r}
+
+hist(rates100)
+hist(rates1000)
+hist(rates5000)
+```
+
+```{r}
+shapiro.test(rates5000)
+```

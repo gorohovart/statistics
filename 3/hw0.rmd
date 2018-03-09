@@ -1,0 +1,31 @@
+---
+title: HW 2
+output: html_document
+author: Артем Горохов
+---
+
+# Задание 9
+
+```{r}
+speeds = c(128,107,107,92,118,114,117,109,115,106,109,106,109,120,112,105,114,119,110,130, 104, 103, 99, 113,104)
+shapiro.test(speeds)
+hist(speeds, freq = FALSE)
+```
+
+### Наше распределение похоже на нормальное, поэтому будем использовать точную оценку. 
+
+```{r}
+calcCI = function (x,alpha){
+  m = mean(x)
+  n = length(x)
+  s = sd(x)
+  stud = qt(1-alpha/2, n-1)
+  q1 = m-stud*s/sqrt(n)
+  q2 = m + stud*s/sqrt(n)
+  return(round(c(stud,
+                 q1,
+                 q2),3))
+}
+
+calcCI(speeds, 0.02)
+```

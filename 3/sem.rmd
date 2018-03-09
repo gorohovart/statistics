@@ -1,0 +1,208 @@
+---
+title: Sem 3
+output: html_document
+author: Артем Горохов
+---
+
+# Задание 1
+
+```{r}
+library(purrr)
+
+calcCI = function (m,s,n,alpha){
+  stud = qt(1-alpha/2, n-1)
+  q1 = m-stud*s/sqrt(n)
+  q2 = m + stud*s/sqrt(n)
+  return(round(c( q1,
+            q2,
+            q2-q1,
+            q1+(q2-q1)/2,
+            m
+            ),3))
+}
+
+
+calcStats = function(n, alpha, mySd) {
+  myMean = 2
+  sample = rnorm(n, myMean, mySd)
+  gen = calcCI(mean(sample), sd(sample), n, alpha)
+  #my = calcCI(myMean, mySd, n, alpha)
+  cat('N:', n, 'Alpha:', alpha, 'Sd:', mySd, '\n')
+  cat("    CI:", gen[1], gen[2], '\n')
+  cat("    Length:", gen[3],'\n')
+  cat("    CI mean:", gen[4],'\n')
+  cat("    Mean:", gen[5],'\n')
+  }
+
+calcStats(30, 0.05, 1)
+calcStats(100, 0.05, 1)
+calcStats(1000, 0.05, 1)
+```
+
+
+```{r}
+calcStats(30, 0.05, 0.5)
+calcStats(30, 0.05, 1)
+calcStats(30, 0.05, 2)
+```
+
+```{r}
+calcStats(30, 0.01, 1)
+calcStats(30, 0.05, 1)
+calcStats(30, 0.1, 1)
+```
+
+```{r}
+meansN = function(n, mySd) {
+  myMean = 2
+  1:1000 %>%
+    map(function(x) mean(rnorm(n, myMean, mySd)))
+}
+
+calcStats2 = function(n){
+  means = unlist(meansN(n, 1))
+
+  q = quantile(means,c(0.025,0.975))
+  cat('N:', n, 'Alpha:', 0.05, 'Sd:', 1, '\n')
+  cat("    CI:", q[1], q[2], '\n')
+  cat("    Length:", q[2] - q[1],'\n')
+  cat("    CI mean:", (q[2] - q[1])/2 + q[1],'\n')
+  cat("    Mean:", mean(means),'\n')
+}
+
+calcStats2(30)
+calcStats2(100)
+calcStats2(1000)
+```
+
+### Чем отличаются формулы для случая известной и случая неизвестной дисперсии?
+
+
+
+### Что происходит с доверительным интервалом при увеличении дисперсии, объема выборки, уровня значимости? Почему?
+
+С увеличением объёма выборки и уровня значимости интервал сужается. С увеличением дисперсии интервал увеличивается.
+
+# Задание 2
+
+```{r}
+library(purrr)
+calcGen = function (n,rate){
+  medians = map(1:1000, function(x) median(unlist(rexp(n, rate))))
+  
+  q = quantile(unlist(medians),c(0.025,0.975))
+  return(round((q),3))
+}
+
+
+calcStatsExp = function(n, alpha, rate) {
+  sample = rexp(n, rate)
+  sorted_sample = sort(sample)
+  j = n/2 - qnorm(1 - alpha / 2)*sqrt(n)
+  k = n/2 + qnorm(1 - alpha / 2)*sqrt(n)
+  q1 = sorted_sample[j]
+  q2 = sorted_sample[k]
+  
+  gen = calcGen(n,rate)
+  
+  cat('N:', n, 'Rate:', rate, '\n')
+  cat("    CI:    ", round(q1,3), round(q2,3), '   Length:', q2-q1,'\n')
+  cat("    Gen CI:", gen[1], gen[2],'   Length:', gen[2]-gen[1],'\n')
+  cat("                     Length Delta:", abs(q2-q1 - gen[1] + gen[2]),'\n\n')
+  
+  }
+
+calcStatsExp(30, 0.05, 1)
+calcStatsExp(100, 0.05, 1)
+calcStatsExp(1000, 0.05, 1)
+calcStatsExp(3000, 0.05, 1)
+
+```
+
+
+### Какое распределение имеет выборочная медиана при n->∞ ?
+ Нормальное
+ 
+```{r}
+medians = map(1:1000, function(x) median(unlist(rexp(3000, 1))))
+  
+hist(unlist(medians), freq = F, main = 'Density of median for n = 3000', xlab = 'median')
+```
+
+### Из чего следуют формулы для доверительного интевала медианы? (каких свойств какого распределения)?
+
+### Что происходит с увеличением N?
+С увеличением выборки доверительный интервал сужается.
+
+# Задание 3
+
+```{r}
+myMean = 5
+mySd = 2
+init_sample = rnorm(2000,myMean,mySd)
+
+boxplot_replacement = function(n) {
+  
+  mean_norep = rep(NA,1000) 
+  mean_withrep = rep(NA,1000)
+  mean_fromp2 = rep(NA,1000)
+  
+  for (i in c(1:1000)) {
+    sample_fromp2 =  rnorm(n,myMean,mySd) 
+    mean_fromp2[i] = mean(sample_fromp2)
+    
+    sample_norep = sample(init_sample,n,replace=F)
+    mean_norep[i] = mean(sample_norep)
+    
+    sample_withrep = sample(init_sample,n,replace=T)
+    mean_withrep[i] = mean(sample_withrep)
+  }
+  
+  boxplot(mean_norep,mean_withrep, mean_fromp2,names = c('No replacement','With replacement', 'NewSamples'))
+    
+}
+
+boxplot_replacement(30)
+abline(h=myMean,lwd=mySd,col='green')
+
+```
+
+```{r}
+boxplot_replacement(1600)
+abline(h=myMean,lwd=mySd,col='green')
+```
+
+```{r}
+calcCInorep = function (n, alpha) {
+  N = 2000
+  sample_norep = sample(init_sample,n,replace=F)
+  stud = qt(1-alpha/2, n-1)
+  s = sd(sample_norep)
+  m= mean(sample_norep)
+  q1 = m-stud*s/sqrt(n)
+  q2 = m + stud*s/sqrt(n)
+  
+  correction = sqrt((N-n)/(N-1))
+  corrQ1 = m - stud*s/sqrt(n)*correction
+  corrQ2 = m + stud*s/sqrt(n)*correction
+  
+  cat('N:', n, 'Alpha:', alpha, '\n')
+  cat("    CI:          ", round(q1,3), round(q2,3), '   Length:', q2-q1,'\n')
+  cat("    corrected CI: ", round(corrQ1,3), round(corrQ2,3), '   Length:', corrQ2-corrQ1,'\n')
+}
+
+calcCInorep(30, 0.05)
+calcCInorep(100, 0.05)
+calcCInorep(1600, 0.05)
+size=100
+```
+
+### Как выглядит НЕМСЕЩЁННАЯ оценка для Var(hatX)?
+
+### Убедитесь, что используете именно её
+
+### Зачем нужна поправка на конечную совокупность? Что она делает с доверительным интервалом? Почему?
+
+Поправка увеличивает точность и сужает интервал.
+
+### Отличаются ли м.о. у выборок средних (п1 и п2)? Дисперсии?
